@@ -1,10 +1,12 @@
 {
   "name": "@ricko-v/l",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "bin": {
     "l": "bin/index.js"
@@ -18,7 +20,6 @@
     "unzipper": "^0.12.3",
     "zip-a-folder": "^3.1.9"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ricko-v/l.git"
@@ -26,5 +27,11 @@
   "bugs": {
     "url": "https://github.com/ricko-v/l/issues"
   },
-  "homepage": "https://github.com/ricko-v/l#readme"
+  "homepage": "https://github.com/ricko-v/l#readme",
+  "devDependencies": {
+    "eslint": "^9.32.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
+    "prettier": "^3.6.2"
+  }
 }

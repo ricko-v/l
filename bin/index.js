@@ -1,20 +1,24 @@
 #!/usr/bin/env node
 
+import { findPackageJSON } from 'node:module';
 import {
   createLambda,
   deleteLambda,
   deployLambda,
   init,
   syncLambda,
-} from "../commands/index.js";
+} from '../commands/index.js';
+import { readFileSync } from 'node:fs';
 
 const cmd = process.argv.slice(2);
-
+const packageJSON = readFileSync(findPackageJSON(import.meta.url), 'utf8');
+const { version } = JSON.parse(packageJSON);
+  
 if (cmd.length === 0) {
   console.error(`
    l
     L      L - Alat sederhana untuk mengelola fungsi AWS Lambda
-   L L     Versi: 1.0.0
+   L L     Versi: ${version}
   L   L    Repositori: 
  L     L   Penggunaan: l <perintah> [opsi]
 L       L
@@ -29,18 +33,18 @@ delete-lambda     Menghapus fungsi Lambda dari AWS
   process.exit(1);
 }
 
-if (cmd[0] === "init") {
+if (cmd[0] === 'init') {
   init();
-} else if (cmd[0] === "sync-lambda") {
+} else if (cmd[0] === 'sync-lambda') {
   syncLambda();
-} else if (cmd[0] === "deploy-lambda") {
+} else if (cmd[0] === 'deploy-lambda') {
   if (!cmd[1]) {
-    console.log("Penggunaan: l deploy-lambda <nama-lambda>");
+    console.log('Penggunaan: l deploy-lambda <nama-lambda>');
     process.exit(1);
   }
   deployLambda(cmd[1]);
-} else if (cmd[0] === "create-lambda") {
+} else if (cmd[0] === 'create-lambda') {
   createLambda();
-} else if (cmd[0] === "delete-lambda") {
+} else if (cmd[0] === 'delete-lambda') {
   deleteLambda();
 }
