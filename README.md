@@ -3,8 +3,8 @@
 <pre>
    l
     L      L - Alat sederhana untuk mengelola fungsi AWS Lambda
-   L L     Versi: 1.0.2
-  L   L    Repositori: 
+   L L     Versi: 1.0.3
+  L   L    Repositori: https://github.com/ricko-v/l
  L     L   Penggunaan: l <perintah> [opsi]
 L       L
 </pre>
@@ -53,6 +53,10 @@ l <perintah> [opsi]
 ### [1.0.2] - 2025-08-03
 
 - Dukungan untuk bahasa pemrograman python 3.12 - 3.13
+
+#### [1.0.3] - 2025-08-03
+
+- Menambahkan info repositori github
 
 <hr/>
 

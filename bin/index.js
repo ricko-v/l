@@ -13,13 +13,13 @@ import { readFileSync } from 'node:fs';
 const cmd = process.argv.slice(2);
 const packageJSON = readFileSync(findPackageJSON(import.meta.url), 'utf8');
 const { version } = JSON.parse(packageJSON);
-  
+
 if (cmd.length === 0) {
   console.error(`
    l
     L      L - Alat sederhana untuk mengelola fungsi AWS Lambda
    L L     Versi: ${version}
-  L   L    Repositori: 
+  L   L    Repositori: https://github.com/ricko-v/l
  L     L   Penggunaan: l <perintah> [opsi]
 L       L
 
