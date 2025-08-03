@@ -11,6 +11,12 @@ L       L
 
 `L` adalah alat baris perintah yang sederhana namun kuat untuk mengelola fungsi AWS Lambda Anda. Alat ini dirancang untuk menyederhanakan alur kerja pengembangan, deployment, dan manajemen fungsi Lambda.
 
+## Install
+
+```
+npm i -g @ricko-v/l
+```
+
 ## Penggunaan
 
 ```
