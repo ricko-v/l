@@ -5,7 +5,7 @@
     L      L - Alat sederhana untuk mengelola fungsi AWS Lambda
    L L     Versi: 1.0.3
   L   L    Repositori: https://github.com/ricko-v/l
- L     L   Penggunaan: l <perintah> [opsi]
+ L     L   Penggunaan: l &lt;perintah&gt [opsi]
 L       L
 </pre>
 
