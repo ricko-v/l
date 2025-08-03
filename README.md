@@ -3,7 +3,7 @@
 <pre>
    l
     L      L - Alat sederhana untuk mengelola fungsi AWS Lambda
-   L L     Versi: 1.0.1
+   L L     Versi: 1.0.2
   L   L    Repositori: 
  L     L   Penggunaan: l <perintah> [opsi]
 L       L
@@ -35,8 +35,7 @@ l <perintah> [opsi]
 
 ## Fitur yang Akan Datang
 
-- [ ] Dukungan untuk bahasa pemrograman Python
-- [ ] Soon
+- [ ] Memperbarui konfigurasi lambda
 
 ## Histori Perubahan
 
@@ -50,6 +49,10 @@ l <perintah> [opsi]
 - Menambahkan README.md
 - Menseragamkan semua input dan ouput menggunakan Bahasa Indonesia
 - Menambahkan prettier dan eslint
+
+### [1.0.2] - 2025-08-03
+
+- Dukungan untuk bahasa pemrograman python 3.12 - 3.13
 
 <hr/>
 

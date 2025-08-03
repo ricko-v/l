@@ -211,15 +211,20 @@ export const createLambda = async () => {
   const newResource = JSON.parse(createNewResource);
 
   let templateLambda = '';
+  let handlerLambda = '';
 
   if (selectedRuntime.search('nodejs') !== -1) {
     templateLambda = `${__dirname}/../template/lambda-nodejs.zip`;
+    handlerLambda = 'index.handler';
+  } else if (selectedRuntime.search('python') !== -1) {
+    templateLambda = `${__dirname}/../template/lambda-python.zip`;
+    handlerLambda = 'lambda_function.lambda_handler';
   }
 
   const createLambda = await aws(
     `aws lambda create-function --function-name ${lambdaName} --zip-file fileb://${templateLambda} --runtime ${selectedRuntime} --role ${
       config.awsRoleExecution
-    } --handler index.handler --architectures ${selectedArchitecture} --vpc-config ${JSON.stringify(
+    } --handler ${handlerLambda} --architectures ${selectedArchitecture} --vpc-config ${JSON.stringify(
       vpcConfig,
     )} --output json`,
   );
