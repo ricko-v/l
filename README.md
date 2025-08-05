@@ -3,7 +3,7 @@
 <pre>
    l
     L      L - Alat sederhana untuk mengelola fungsi AWS Lambda
-   L L     Versi: 1.0.3
+   L L     Versi: 1.0.4
   L   L    Repositori: https://github.com/ricko-v/l
  L     L   Penggunaan: l &lt;perintah&gt [opsi]
 L       L
@@ -35,7 +35,8 @@ l <perintah> [opsi]
 
 ## Fitur yang Akan Datang
 
-- [ ] Memperbarui konfigurasi lambda
+- [ ] Create layers
+- [ ] Delete layers
 
 ## Histori Perubahan
 
@@ -54,9 +55,13 @@ l <perintah> [opsi]
 
 - Dukungan untuk bahasa pemrograman python 3.12 - 3.13
 
-#### [1.0.3] - 2025-08-03
+### [1.0.3] - 2025-08-03
 
 - Menambahkan info repositori github
+
+### [1.0.4] - 2025-08-05
+
+- Memperbarui konfigurasi lambda dengan --with-config ketika deploy-lambda
 
 <hr/>
 

@@ -39,10 +39,13 @@ if (cmd[0] === 'init') {
   syncLambda();
 } else if (cmd[0] === 'deploy-lambda') {
   if (!cmd[1]) {
-    console.log('Penggunaan: l deploy-lambda <nama-lambda>');
+    console.log('Penggunaan: l deploy-lambda <nama-lambda> [--with-config]');
     process.exit(1);
+  } else if (cmd[2] == '--with-config') {
+    deployLambda(cmd[1], { withConfig: true });
+  } else {
+    deployLambda(cmd[1]);
   }
-  deployLambda(cmd[1]);
 } else if (cmd[0] === 'create-lambda') {
   createLambda();
 } else if (cmd[0] === 'delete-lambda') {
