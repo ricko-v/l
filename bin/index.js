@@ -8,7 +8,8 @@ const main = async () => {
   try {
     const command = process.argv[2];
     if (process.argv.length < 3) {
-      console.log(`usage: l <command> <subcommand> [<args>]
+      console.log(`
+Usage: l <command> <subcommand> [<args>]
         
 Global Commands:
   create              Create a new project
@@ -18,6 +19,8 @@ In lambda directory:
   push config         Push local configuration to AWS Lambda
   pull                Pull function from AWS Lambda
   pull config         Pull configuration from AWS Lambda
+
+Repository: https://github.com/ricko-v/l
 `);
       process.exit(1);
     }

@@ -8,6 +8,14 @@ Before using this tool, ensure you have the following installed:
 
 - [AWS CLI](https://aws.amazon.com/cli/): Required for interacting with AWS services. Follow the [installation guide](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) to set it up.
 
+## Installation
+
+Install the tool globally using npm:
+
+```bash
+npm i -g @ricko-v/l
+```
+
 ## Usage
 
 ```bash
@@ -31,10 +39,10 @@ l create
 Before running any commands, ensure you are in the directory containing your Lambda function. Use the following command to navigate to the folder:
 
 ```bash
-cd /path/to/your/lambda/function
+cd /your-project/lambda-function
 ```
 
-Replace `/path/to/your/lambda/function` with the actual path to your Lambda function folder.
+Replace `/your-project/lambda-function` with the actual path to your Lambda function folder.
 
 ### `push`
 
@@ -68,4 +76,4 @@ Pull configuration from AWS Lambda.
 l pull config
 ```
 
-Updated on 21:00 WIB
+Updated on 10 October 2025
