@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { create } from "../core/create.js";
+import { init } from "../core/init.js";
 import { pull } from "../core/pull.js";
 import { push } from "../core/push.js";
 
@@ -12,7 +12,7 @@ const main = async () => {
 Usage: l <command> <subcommand> [<args>]
         
 Global Commands:
-  create              Create a new project
+  init                Initialize a new project
 
 In lambda directory:
   push                Push local function to AWS Lambda
@@ -25,8 +25,8 @@ Repository: https://github.com/ricko-v/l
       process.exit(1);
     }
 
-    if (command === "create") {
-      await create();
+    if (command === "init") {
+      await init();
       process.exit(0);
     } else if (command === "push") {
       const withConfig = process.argv[3] === "config";

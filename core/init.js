@@ -7,11 +7,11 @@ import { getListRegions } from "../aws/get-list-regions.js";
 import { getListLambdaWPrefix } from "../aws/get-list-lambda-w-prefix.js";
 import { downloadLambda } from "../aws/download-list-lambda.js";
 
-export const create = async () => {
-  console.log("Let's create a new project\n");
+export const init = async () => {
+  console.log("Let's initialize a new project\n");
   const currentDir = getCurrentDir();
   const project = await input({
-    message: "Name project:",
+    message: "Project Name:",
   });
   const projectPath = path.join(currentDir, project);
   if (fs.existsSync(projectPath)) {
@@ -20,7 +20,7 @@ export const create = async () => {
   }
 
   const prefix = await input({
-    message: "Prefix project:",
+    message: "Project Prefix:",
   });
 
   if (!prefix) {
@@ -62,5 +62,5 @@ export const l = {
     );
     await downloadLambda(listLambda, profile, projectPath);
   }
-  console.log(`Project ${project} created at ${projectPath}`);
+  console.log(`Project ${project} initialized at ${projectPath}`);
 };

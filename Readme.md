@@ -24,12 +24,12 @@ l <command> <subcommand> [<args>]
 
 ## Global Commands
 
-### `create`
+### `init`
 
-First, create a new project before using another command.
+First, initialize a new project before using another command.
 
 ```bash
-l create
+l init
 ```
 
 ## Commands in Lambda Directory
@@ -76,4 +76,4 @@ Pull configuration from AWS Lambda.
 l pull config
 ```
 
-Updated on 10 October 2025
+Updated on 11 October 2025
