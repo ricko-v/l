@@ -42,7 +42,7 @@ export const init = async () => {
     choices: listRegions,
   });
 
-  const listLambda = await getListLambdaWPrefix(prefix, profile);
+  const listLambda = await getListLambdaWPrefix(prefix, region, profile);
 
   fs.mkdirSync(projectPath);
   fs.writeFileSync(
@@ -60,7 +60,7 @@ export const l = {
     console.log(
       `Found ${listLambda.length} Lambda functions with prefix "${prefix}".`
     );
-    await downloadLambda(listLambda, profile, projectPath);
+    await downloadLambda(listLambda, region, profile, projectPath);
   }
   console.log(`Project ${project} initialized at ${projectPath}`);
 };

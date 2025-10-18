@@ -43,9 +43,9 @@ export const push = async (withConfig = false) => {
     execSync(
       `aws lambda update-function-code --function-name ${currentDir
         .split("/")
-        .slice(-1)} --zip-file fileb://${zipPath} --profile ${
-        config.profile
-      } --region ${config.region}`,
+        .slice(-1)} --zip-file fileb://${zipPath} --region ${
+        config.region
+      } --profile ${config.profile}`,
       { stdio: "ignore" }
     );
 

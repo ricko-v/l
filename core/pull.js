@@ -14,7 +14,7 @@ export const pull = async (withConfig = false) => {
   if (withConfig) {
     console.log(`Pulling lambda configuration ${functionName}...`);
     execSync(
-      `aws lambda get-function-configuration --function-name ${functionName} --profile ${config.profile} > ${dir}/${functionName}/config.json`,
+      `aws lambda get-function-configuration --function-name ${functionName} --region ${config.region} --profile ${config.profile} > ${dir}/${functionName}/config.json`,
       { stdio: "ignore" }
     );
 
@@ -34,7 +34,7 @@ export const pull = async (withConfig = false) => {
     console.log(`Pulling lambda functions ${functionName}...`);
 
     execSync(
-      `aws lambda get-function --function-name ${functionName} --query 'Code.Location' --profile ${config.profile} --output text | xargs curl -o ${dir}/${functionName}.zip`,
+      `aws lambda get-function --function-name ${functionName} --query 'Code.Location' --region ${config.region} --profile ${config.profile} --output text | xargs curl -o ${dir}/${functionName}.zip`,
       { stdio: "ignore" }
     );
     const zip = new AdmZip(`${dir}/${functionName}.zip`);
