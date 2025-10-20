@@ -47,12 +47,11 @@ export const init = async () => {
   fs.mkdirSync(projectPath);
   fs.writeFileSync(
     path.join(projectPath, "l.js"),
-    `
-// Auto-generated file from l
+    `// Auto-generated file from l
 export const l = {
-  prefix: "${prefix}",
-  profile: "${profile}",
-  region: "${region}"
+  prefix: "${prefix.trim()}",
+  profile: "${profile.trim()}",
+  region: "${region.trim()}"
 }`
   );
 
