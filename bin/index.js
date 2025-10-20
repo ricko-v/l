@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { init } from "../core/init.js";
+import { invoke } from "../core/invoke.js";
 import { pull } from "../core/pull.js";
 import { push } from "../core/push.js";
 
@@ -19,6 +20,7 @@ In lambda directory:
   push config         Push local configuration to AWS Lambda
   pull                Pull function from AWS Lambda
   pull config         Pull configuration from AWS Lambda
+  invoke              Invoke the AWS Lambda function
 
 Repository: https://github.com/ricko-v/l
 `);
@@ -35,6 +37,9 @@ Repository: https://github.com/ricko-v/l
     } else if (command === "pull") {
       const withConfig = process.argv[3] === "config";
       await pull(withConfig);
+      process.exit(0);
+    } else if (command === "invoke") {
+      await invoke();
       process.exit(0);
     } else {
       console.log(`l: Unknown command '${command}'`);
