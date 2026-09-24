@@ -4,9 +4,40 @@ import path from "node:path";
 import { test } from "node:test";
 import { syncCommand } from "../src/commands/sync.js";
 import { readState, acquireLock } from "../src/sync/state.js";
-import { unpackArchive } from "../src/sync/archive.js";
+import { packArchive, unpackArchive } from "../src/sync/archive.js";
+import { sha256 } from "../src/sync/files.js";
 import { saveProjectConfig, readProjectConfig } from "../src/config/project.js";
 import { fixture, ARN } from "./sync-fixtures.js";
+
+test("pull and push retain executable deployment files without false changes", async (t) => {
+  const f = await fixture(t);
+  const remoteFiles = await unpackArchive(f.remote.zip);
+  remoteFiles.set("bootstrap", { data: Buffer.from("executable"), mode: 0o755 });
+  f.remote.zip = await packArchive(remoteFiles);
+  f.remote.current.codeSha256 = sha256(f.remote.zip);
+  await syncCommand("pull", undefined, { yes: true }, f);
+  await syncCommand("pull", undefined, { yes: true }, f); // No false local conflict on Windows.
+  await syncCommand("push", undefined, { yes: true }, f);
+  assert.equal(f.remote.updates.length, 0);
+  await fs.writeFile(path.join(f.directory, "lambda/api/bootstrap"), "edited executable");
+  await syncCommand("push", undefined, { yes: true }, f);
+  assert.equal(f.remote.updates.length, 1);
+  const deployed = (await unpackArchive(f.remote.updates[0]!.zip)).get("bootstrap")!;
+  assert.equal(deployed.mode, 0o755);
+  assert.equal(deployed.data.toString(), "edited executable");
+});
+
+test("first push retains remote executable mode when there is no local baseline", async (t) => {
+  const f = await fixture(t);
+  const remoteFiles = await unpackArchive(f.remote.zip);
+  remoteFiles.set("bootstrap", { data: Buffer.from("original"), mode: 0o755 });
+  f.remote.zip = await packArchive(remoteFiles);
+  f.remote.current.codeSha256 = sha256(f.remote.zip);
+  await fs.mkdir(path.join(f.directory, "lambda/api"), { recursive: true });
+  await fs.writeFile(path.join(f.directory, "lambda/api/bootstrap"), "new executable", { mode: 0o755 });
+  await syncCommand("push", undefined, {}, f);
+  assert.equal((await unpackArchive(f.remote.updates[0]!.zip)).get("bootstrap")!.mode, 0o755);
+});
 
 test("pull → edit → push preserves target revision, tracks additions/deletions, and avoids redundant pushes", async (t) => {
   const f = await fixture(t);
@@ -167,7 +198,7 @@ test("symlinked source roots and local state directories are rejected", async (t
     const f = await fixture(t);
     const outside = path.join(f.directory, "outside");
     await fs.mkdir(outside);
-    await fs.symlink(outside, path.join(f.directory, component));
+    await fs.symlink(outside, path.join(f.directory, component), "junction");
     await assert.rejects(syncCommand("pull", undefined, { yes: true }, f), /Expected a real directory/);
     assert.deepEqual(await fs.readdir(outside), []);
   }

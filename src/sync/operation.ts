@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { directoryAt, readFiles, manifest, diff, writeFiles, sha256, type Files, type Manifest } from "./files.js";
+import { directoryAt, readFiles, manifest, diff, writeFiles, sha256, preserveDeploymentModes, type Files, type Manifest } from "./files.js";
 import { packageFilter, packArchive, unpackArchive } from "./archive.js";
 import { readState, saveState, atomicText, type SyncEntry, type SyncState } from "./state.js";
 import type { Remote, RemoteFunction } from "./remote.js";
@@ -62,8 +62,8 @@ export async function prepareSync(name: string, context: OperationContext): Prom
   }
 
   const source = path.join(root, "lambda", name);
-  const local = existed ? await readFiles(source, action === "push" ? await packageFilter(root) : undefined) : new Map() as Files;
-  const before = manifest(local);
+  const local = existed ? await readFiles(source, action === "push" ? await packageFilter(root) : undefined, previous?.files) : new Map() as Files;
+  let before = manifest(local);
   let after: Manifest;
   let baseline: Manifest;
   let zip: Buffer;
@@ -78,6 +78,7 @@ export async function prepareSync(name: string, context: OperationContext): Prom
       baseline = before;
     } else {
       baseline = manifest(remoteFiles);
+      before = manifest(preserveDeploymentModes(local, baseline));
       after = before;
       zip = await packArchive(local);
     }
@@ -111,7 +112,7 @@ export async function validatePrepared(plan: PreparedSync, context: OperationCon
   ready(current);
   const exists = await directoryAt(context.root, `lambda/${plan.name}`);
   const files = exists ? await readFiles(path.join(context.root, "lambda", plan.name),
-    context.action === "push" ? await packageFilter(context.root) : undefined) : new Map() as Files;
+    context.action === "push" ? await packageFilter(context.root) : undefined, plan.before) : new Map() as Files;
   if (exists !== plan.existed || diff(plan.before, manifest(files)).length) {
     throw new Error(context.action === "push"
       ? "Local package changed during preview. Retry push to review the updated files."
@@ -128,7 +129,7 @@ async function replaceLocal(root: string, plan: PreparedSync, files: Files, stat
   let installed = false;
   try {
     await writeFiles(stage, files);
-    if (exists !== plan.existed || diff(plan.before, manifest(exists ? await readFiles(destination) : new Map())).length) {
+    if (exists !== plan.existed || diff(plan.before, manifest(exists ? await readFiles(destination, undefined, plan.before) : new Map())).length) {
       throw new Error("Local files changed while staging the pull. Retry after reviewing the changes.");
     }
     if (exists) {

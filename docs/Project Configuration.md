@@ -70,6 +70,10 @@ Mode manual hanya memvalidasi format nama; keberadaan function belum diverifikas
 | `lambda.functionName` | Nama 1–64 huruf, angka, underscore, atau hyphen |
 | `lambda.prefix` | Prefix 1–64 huruf, angka, underscore, atau hyphen |
 
+Nama profile tidak boleh memakai nama device Windows seperti `con`, `nul`,
+`com1`–`com9`, atau `lpt1`–`lpt9`. Nama function AWS yang valid tetapi tidak dapat
+dipakai sebagai nama folder lokal akan ditolak saat pull/push.
+
 Jika memilih prefix, bagian Lambda menjadi:
 
 ```json
@@ -148,8 +152,12 @@ dan memakai nilai lama sebagai default. Tidak ada `--force` atau mode noninterak
 File JSON yang rusak atau versi yang tidak didukung harus diperbaiki terlebih dulu.
 
 Menjawab tidak pada konfirmasi tidak menulis file. Ctrl+C/EOF membatalkan input.
-Penulisan menggunakan file sementara lalu publikasi atomik. Untuk config baru,
-publikasi gagal jika file sudah dibuat oleh proses lain. Untuk update, wizard
+Penulisan menggunakan file sementara lalu publikasi atomik melalui hard link untuk
+config baru. Jika sistem menolak atau tidak mendukung hard link (misalnya Termux),
+CLI memakai salinan eksklusif yang tetap gagal jika tujuan sudah ada. Salinan ini
+tidak atomik: proses lain dapat membaca file yang belum lengkap saat penyalinan,
+dan penghentian paksa dapat meninggalkan config parsial. Periksa/perbaiki JSON jika
+proses terhenti saat menyimpan. Untuk update, wizard
 memeriksa kembali isi file sebelum menggantinya; ini bukan mekanisme locking antar
 process. Hindari mengubah file secara bersamaan saat konfirmasi simpan berlangsung.
 

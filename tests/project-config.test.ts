@@ -32,6 +32,59 @@ test("new config never overwrites an existing destination", async (t) => {
   assert.deepEqual(await fs.readdir(directory), ["l.config.json"]);
 });
 
+for (const code of ["EACCES", "EPERM", "ENOTSUP", "EOPNOTSUPP", "ENOSYS", "EXDEV"]) {
+  test(`new config falls back to an exclusive copy when link fails with ${code}`, async (t) => {
+    const directory = await fixture(t);
+    t.mock.method(fs, "link", async () => { throw Object.assign(new Error("link unavailable"), { code }); });
+    await saveProjectConfig(directory, config);
+    assert.deepEqual((await readProjectConfig(directory))?.config, config);
+    assert.deepEqual(await fs.readdir(directory), ["l.config.json"]);
+  });
+}
+
+test("fallback refuses a config created by another process during publication", async (t) => {
+  const directory = await fixture(t);
+  const otherContents = JSON.stringify({ ...config, name: "other-process" });
+  t.mock.method(fs, "link", async () => {
+    await fs.writeFile(path.join(directory, "l.config.json"), otherContents);
+    throw Object.assign(new Error("link denied"), { code: "EACCES" });
+  });
+  await assert.rejects(saveProjectConfig(directory, config), { code: "EEXIST" });
+  assert.equal(await fs.readFile(path.join(directory, "l.config.json"), "utf8"), otherContents);
+  assert.deepEqual(await fs.readdir(directory), ["l.config.json"]);
+});
+
+test("fallback refuses a destination symlink without modifying its target", async (t) => {
+  const directory = await fixture(t);
+  const target = path.join(directory, "target.json");
+  await fs.writeFile(target, "unchanged");
+  await fs.symlink(target, path.join(directory, "l.config.json"));
+  t.mock.method(fs, "link", async () => { throw Object.assign(new Error("link denied"), { code: "EPERM" }); });
+  await assert.rejects(saveProjectConfig(directory, config), { code: "EEXIST" });
+  assert.equal(await fs.readFile(target, "utf8"), "unchanged");
+  assert.ok((await fs.lstat(path.join(directory, "l.config.json"))).isSymbolicLink());
+  assert.deepEqual((await fs.readdir(directory)).sort(), ["l.config.json", "target.json"]);
+});
+
+test("fallback propagates copy permission failures and cleans up the temporary file", async (t) => {
+  const directory = await fixture(t);
+  const failure = Object.assign(new Error("copy denied"), { code: "EACCES" });
+  t.mock.method(fs, "link", async () => { throw Object.assign(new Error("link denied"), { code: "EACCES" }); });
+  t.mock.method(fs, "copyFile", async () => { throw failure; });
+  await assert.rejects(saveProjectConfig(directory, config), (error) => error === failure);
+  assert.deepEqual(await fs.readdir(directory), []);
+});
+
+test("unexpected hard link failures do not trigger a copy", async (t) => {
+  const directory = await fixture(t);
+  const failure = Object.assign(new Error("disk failure"), { code: "EIO" });
+  t.mock.method(fs, "link", async () => { throw failure; });
+  const copy = t.mock.method(fs, "copyFile", async () => { assert.fail("unexpected copy"); });
+  await assert.rejects(saveProjectConfig(directory, config), (error) => error === failure);
+  assert.equal(copy.mock.callCount(), 0);
+  assert.deepEqual(await fs.readdir(directory), []);
+});
+
 test("update replaces a complete config and refuses changes made during the wizard", async (t) => {
   const directory = await fixture(t);
   await saveProjectConfig(directory, config);

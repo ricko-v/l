@@ -189,6 +189,18 @@ CLI tidak menjalankan install/build/script project. Siapkan output siap deploy
 sebelum push. Permission file dinormalisasi ke `0644` atau `0755` jika executable.
 Empty directories tidak disertakan dalam ZIP hasil push.
 
+### Windows dan permission executable
+
+Windows tidak menyimpan bit executable POSIX melalui `stat`/`chmod` seperti Linux.
+Pada Windows, CLI mempertahankan mode `0755` atau `0644` dari baseline terakhir
+untuk nama file yang sama, termasuk setelah isi file diedit. Push pertama tanpa
+baseline mengambil mode dari paket remote. File baru memakai `0644`.
+
+Untuk menambahkan atau mengganti nama file executable seperti `bootstrap`, siapkan
+paket dari Linux/WSL atau macOS dan atur `chmod +x` sebelum push. Jangan mengubah
+`.l/state.json` untuk mengatur permission. Pada Linux/macOS, perubahan permission
+lokal tetap ikut dihitung dalam preview dan paket upload.
+
 ## Batasan dan izin
 
 - Hanya function ZIP yang sudah ada; container image dan pembuatan function belum didukung.

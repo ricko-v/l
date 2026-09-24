@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 import { test, type TestContext } from "node:test";
 import { LambdaClient } from "@aws-sdk/client-lambda";
 import { STSClient } from "@aws-sdk/client-sts";
@@ -81,7 +82,7 @@ test("profile precedence is explicit > project > default; unsafe names and case 
   assert.equal(resolveProfile(undefined, "production"), "production");
   assert.equal(resolveProfile(), "default");
   assert.equal(resolveProfile("default", "production"), "default");
-  for (const name of ["", "../prod", "/tmp/prod", ".", "prod.test", "Prod", "a\\b", " bad", "a".repeat(65)]) {
+  for (const name of ["", "../prod", "/tmp/prod", ".", "prod.test", "Prod", "a\\b", " bad", "a".repeat(65), "con", "nul", "aux", "prn", "com1", "lpt9"]) {
     assert.throws(() => resolveProfile(name), /Invalid profile/);
     assert.throws(() => createProfileSessionStore(name), /Invalid profile/);
     assert.throws(() => validateProjectConfig({ version: 1, name: "test", region: "us-east-1", profile: name }), /Invalid l.config.json/);
@@ -106,7 +107,7 @@ test("missing and corrupt named profiles never fall back to default", async (t) 
 test("profile directories and session files cannot alias another profile via symlinks", async (t) => {
   const f = await fixture(t);
   await f.store("production").saveSession(session("production"));
-  await fs.symlink(path.join(f.home, "profiles/production"), path.join(f.home, "profiles/alias"));
+  await fs.symlink(path.join(f.home, "profiles/production"), path.join(f.home, "profiles/alias"), "junction");
   await assert.rejects(f.store("alias").getSession(), /symlinks/);
   await assert.rejects(f.store("alias").saveSession(session("alias")), /symlinks/);
   await fs.mkdir(path.join(f.home, "profiles/file-alias"));
@@ -218,14 +219,21 @@ test("login saves only its selected profile; failed verification leaves existing
   assert.equal((await getSession("production"))?.accessKeyId, "new-access");
   await loginCommand({ profile: "staging" }, dependencies);
   assert.equal((await getSession("staging"))?.accessKeyId, "new-access");
+  const warning = t.mock.method(console, "warn", () => {});
+  await loginCommand({ profile: "manual-browser" }, {
+    ...dependencies,
+    openBrowser: async () => { throw new Error("xdg-open unavailable"); },
+  });
+  assert.equal((await getSession("manual-browser"))?.accessKeyId, "new-access");
+  assert.match(String(warning.mock.calls[0]?.arguments[0]), /Open the URL above/);
   assert.deepEqual(await getSession(), original);
   const before = await getSession("production");
   fail = true;
   await assert.rejects(loginCommand({}, dependencies), /STS failed/);
   assert.deepEqual(await getSession("production"), before);
   assert.deepEqual(await getSession(), original);
-  assert.equal(signin.mock.callCount(), 3);
-  assert.equal(closed, 3);
+  assert.equal(signin.mock.callCount(), 4);
+  assert.equal(closed, 4);
 });
 
 test("init saves the chosen profile and retains it on update; --profile overrides the wizard default", async (t) => {
@@ -252,7 +260,7 @@ test("global --profile is parsed before and after nested commands, without colli
   const f = await fixture(t);
   await saveProjectConfig(f.directory, { version: 1, name: "test", region: "us-east-1", lambda: { functionName: "api" } });
   const cli = path.resolve(import.meta.dirname, "../src/index.ts");
-  const loader = path.resolve(import.meta.dirname, "../node_modules/tsx/dist/loader.mjs");
+  const loader = pathToFileURL(path.resolve(import.meta.dirname, "../node_modules/tsx/dist/loader.mjs")).href;
   for (const args of [
     ["--profile", "../invalid", "whoami"], ["login", "--profile", "../invalid"],
     ["lambda", "list", "--prefix", "api", "--profile", "../invalid"],

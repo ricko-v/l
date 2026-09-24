@@ -132,6 +132,52 @@ adalah region auth, sehingga bisa berbeda dari region resource.
 Jalankan `l init` langsung di terminal. Piping atau redirect stdin/stdout tidak
 didukung. Masukkan nomor pilihan dan tekan Enter; Ctrl+C membatalkan input.
 
+## Windows dan Linux
+
+- **Windows: `EPERM`/`EBUSY` saat rename atau mengganti folder:** tutup proses yang
+  masih membuka file target dan periksa izin folder. CLI mempertahankan pemeriksaan
+  konflik; jangan menghapus config/state untuk memaksa update.
+- **Windows: nama profile ditolak:** hindari nama device seperti `con`, `nul`,
+  `com1`, dan `lpt1`. Aturan ini juga diterapkan di OS lain untuk portabilitas.
+- **Windows: executable Lambda:** mode executable file yang sudah dikenal mengikuti
+  baseline deployment. File baru memakai `0644`; gunakan Linux/WSL atau macOS untuk
+  menyiapkan executable baru. Lihat [[Pull and Push#Windows dan permission executable]].
+- **Linux: browser tidak terbuka:** buka URL login yang ditampilkan pada browser di
+  komputer yang sama. CLI tetap menunggu callback; browser di komputer lain melalui
+  SSH tidak otomatis dapat menjangkau `127.0.0.1` milik proses CLI.
+- **Native dependency:** CLI tidak menjalankan build. Siapkan binary/dependency untuk
+  OS Linux dan architecture Lambda yang dituju, bukan binary Windows/macOS lokal.
+
+Referensi: [batasan filesystem Node.js](https://nodejs.org/api/fs.html),
+[aturan nama file Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file).
+
+## Termux: `EACCES: permission denied, link`
+
+Jika pesan menyebut `.l.config-*.tmp` dan `l.config.json`, kegagalan terjadi saat
+`l init` menyimpan config baru, setelah file sementara berhasil ditulis. Android
+dapat membatasi operasi hard link di Termux. Implementasi terbaru mencoba salinan
+eksklusif jika hard link ditolak; config yang sudah ada tetap tidak ditimpa.
+Perbaikan ini belum terdapat pada package npm versi `2.0.0`.
+
+Sambil menunggu rilis perbaikan, buat `l.config.json` secara manual di folder
+project **jika file belum ada**, dengan isi berikut:
+
+```json
+{
+  "version": 1,
+  "name": "my-project",
+  "region": "ap-southeast-1",
+  "profile": "default"
+}
+```
+
+Sesuaikan nama, region, dan profile, lalu jalankan `l init` lagi untuk memilih
+function/prefix. Update config yang sudah ada menggunakan rename, bukan hard link.
+Jika file sudah ada, periksa dan edit file tersebut; jangan menimpanya dengan contoh
+ini. Jika salinan juga menghasilkan `EACCES`, periksa izin tulis folder/file.
+
+Referensi: [laporan hard link di Termux](https://github.com/termux/termux-app/issues/837).
+
 ## Init gagal mengambil daftar Lambda
 
 Pastikan telah menjalankan `l login` dan mempunyai izin `lambda:ListFunctions` di

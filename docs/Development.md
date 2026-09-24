@@ -107,6 +107,24 @@ Test tidak memerlukan credentials dan tidak mengakses account AWS. Lingkungan
 sandbox tertentu dapat melarang listen pada loopback; jalankan test pada host lokal
 jika muncul `listen EPERM`.
 
+### Pemeriksaan lintas platform
+
+`.github/workflows/ci.yml` menjalankan install, tes, type-check/build, bantuan CLI,
+dan pemeriksaan paket pada Ubuntu, Windows, dan macOS dengan Node.js 22 serta 24.
+Workflow berjalan saat push ke `main`/`master`, pull request, atau manual dispatch.
+Menambahkan workflow belum berarti runner tersebut telah lulus; periksa hasilnya
+di GitHub Actions setelah perubahan dipush.
+
+`npm test` memakai `scripts/test.mjs` untuk menyusun daftar file tanpa bergantung
+pada wildcard shell. Loader ESM subprocess memakai file URL agar drive letter
+Windows ditangani dengan benar. Tes file symlink pada Windows memerlukan hak
+membuat symlink (Developer Mode atau terminal dengan hak yang sesuai); tes tidak
+diam-diam melewati pemeriksaan jika hak tersebut tidak tersedia.
+
+Tes mencakup mode executable Windows yang disimulasikan, round trip executable
+pull/push pada host asli, path Windows terlarang, fallback hard link, dan login
+saat pembuka browser gagal. Tidak ada login AWS atau deployment sungguhan di CI.
+
 ## Definition of done
 
 Sebelum perubahan dianggap selesai:

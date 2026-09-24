@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 import { test, type TestContext } from "node:test";
 import { initCommand, listFunctionNames } from "../src/commands/init.js";
 import { PromptCancelledError, type InitPrompts } from "../src/cli/prompts.js";
@@ -143,7 +144,7 @@ test("function picker consumes pagination, sorts names, and destroys the client"
 test("non-interactive init fails clearly without writing files", async (t) => {
   const directory = await fixture(t);
   const cli = path.resolve("src/index.ts");
-  const loader = path.resolve("node_modules/tsx/dist/loader.mjs");
+  const loader = pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href;
   const result = spawnSync(process.execPath, ["--import", loader, cli, "init"], { cwd: directory, encoding: "utf8" });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /requires an interactive terminal/);

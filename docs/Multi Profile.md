@@ -30,6 +30,8 @@ dari nama tersebut. Periksa output `Profile`, `Account`, dan `Identity` dari `wh
 Nama profile terdiri dari 1–64 huruf kecil, angka, underscore, atau hyphen, dengan
 karakter pertama huruf/angka. Contoh: `production`, `team-a`, `dev_01`. Nama dengan
 huruf besar, spasi, titik, atau separator path ditolak.
+Nama device Windows seperti `con`, `prn`, `aux`, `nul`, `com1`–`com9`, dan
+`lpt1`–`lpt9` juga ditolak pada semua OS agar profile dapat digunakan lintas platform.
 
 ## Mengikat profile ke project
 

@@ -1,9 +1,12 @@
 import fs from "node:fs/promises";
+import { constants } from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { isProfileName } from "./profiles.js";
 
 export const PROJECT_CONFIG_FILE = "l.config.json";
+
+const UNSUPPORTED_HARD_LINK_CODES = new Set(["EACCES", "EPERM", "ENOTSUP", "EOPNOTSUPP", "ENOSYS", "EXDEV"]);
 
 export interface ProjectConfig {
   version: 1;
@@ -36,7 +39,7 @@ export function validateProjectConfig(value: unknown): asserts value is ProjectC
   if (value.version !== 1) return invalid("version must be 1.");
   if (typeof value.name !== "string" || !value.name.trim()) return invalid("name is required.");
   if (typeof value.region !== "string" || !isRegion(value.region)) return invalid("region format is invalid.");
-  if (value.profile !== undefined && !isProfileName(value.profile)) return invalid("profile must contain 1–64 lowercase letters, digits, underscores or hyphens, starting with a letter or digit.");
+  if (value.profile !== undefined && !isProfileName(value.profile)) return invalid("profile must contain 1–64 lowercase letters, digits, underscores or hyphens, starting with a letter or digit; Windows device names such as con, nul and com1 are reserved.");
   if (value.lambda !== undefined) {
     if (!isRecord(value.lambda)) return invalid("lambda must be an object.");
     const keys = Object.keys(value.lambda);
@@ -101,7 +104,22 @@ export async function saveProjectConfig(
     }
     if (previousContents === null) {
       // Publishing with a hard link fails if another process has created the config.
-      await fs.link(temporary, destination);
+      try {
+        await fs.link(temporary, destination);
+      } catch (error) {
+        if (!UNSUPPORTED_HARD_LINK_CODES.has((error as NodeJS.ErrnoException).code ?? "")) throw error;
+        // Android/Termux and some filesystems disallow hard links. An exclusive
+        // copy still refuses existing files (including symlinks), but readers
+        // can observe an incomplete file while the copy is in progress.
+        await fs.copyFile(temporary, destination, constants.COPYFILE_EXCL);
+        // Windows FlushFileBuffers requires a handle opened for writing.
+        const published = await fs.open(destination, "r+");
+        try {
+          await published.sync();
+        } finally {
+          await published.close();
+        }
+      }
     } else {
       const current = await fs.readFile(destination, "utf8");
       if (current !== previousContents) {

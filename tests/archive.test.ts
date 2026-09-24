@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import yazl from "yazl";
 import { packArchive, unpackArchive, packageFilter } from "../src/sync/archive.js";
-import { manifest, readFiles, MAX_UNPACKED_BYTES } from "../src/sync/files.js";
+import { manifest, readFiles, MAX_UNPACKED_BYTES, preserveDeploymentModes, validateEntryPath } from "../src/sync/files.js";
 import { fixture, files } from "./sync-fixtures.js";
 
 async function rawZip(entries: Array<{ name: string; mode?: number }>) {
@@ -27,6 +27,29 @@ test("ZIP round trip preserves binary contents, root layout, and executable perm
   const zip = await packArchive(source);
   assert.deepEqual(manifest(await unpackArchive(zip)), manifest(source));
   assert.deepEqual(zip, await packArchive(source));
+});
+
+test("Windows packaging preserves baseline executable modes even after editing file contents", () => {
+  const original = files({ bootstrap: "original executable", "index.js": "code" });
+  original.get("bootstrap")!.mode = 0o755;
+  const local = files({ bootstrap: "edited executable", "index.js": "edited code", "new.js": "new" });
+  local.get("index.js")!.mode = 0o755; // Windows stat bits are not deployment permissions.
+  preserveDeploymentModes(local, manifest(original), "win32");
+  assert.equal(local.get("bootstrap")!.mode, 0o755);
+  assert.equal(local.get("index.js")!.mode, 0o644);
+  assert.equal(local.get("new.js")!.mode, 0o644);
+  for (const platform of ["linux", "darwin"] as const) {
+    const posix = files({ bootstrap: "changed mode" });
+    preserveDeploymentModes(posix, manifest(original), platform);
+    assert.equal(posix.get("bootstrap")!.mode, 0o644);
+  }
+});
+
+test("Windows device paths, alternate streams and trailing aliases are rejected on every OS", () => {
+  for (const name of ["CON", "nul.txt", "nested/COM¹.txt", "LPT²", "com³", "data:stream", "file.", "dir /file", "C:/file", "dir\\file"]) {
+    assert.throws(() => validateEntryPath(name), /Unsafe package path/);
+  }
+  for (const name of ["console.js", "com10", "nested/file.txt", ".env"]) validateEntryPath(name);
 });
 
 test("archive rejects traversal, symlinks, duplicate and case-colliding paths", async () => {

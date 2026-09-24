@@ -41,6 +41,11 @@ Browser hanya menyatakan bahwa respons otorisasi sudah diterima. Hasil final tet
 ditampilkan di terminal karena penukaran token, STS, atau penyimpanan masih dapat
 gagal setelah callback.
 
+Jika browser tidak dapat dibuka otomatis, CLI tetap menunggu callback. Buka URL
+yang ditampilkan di browser pada komputer yang menjalankan CLI. Login melalui SSH
+atau container memerlukan callback loopback yang dapat dijangkau dari browser;
+membuka URL di komputer lain saja tidak cukup.
+
 Callback server:
 
 - hanya listen pada loopback `127.0.0.1`;
@@ -85,6 +90,10 @@ Session `default` berada di `~/.l/session.json`; profile bernama memakai
 Pada POSIX, directory dipaksa ke mode `0700` dan file baru dibuat dengan mode
 `0600`. Penyimpanan memakai file sementara, flush, lalu rename agar session lama
 tidak tergantikan oleh JSON yang hanya tertulis sebagian.
+
+Di Windows, lokasi default mengikuti home pengguna, misalnya
+`C:\Users\nama\.l\session.json`. Mode POSIX tersebut tidak menggantikan Windows
+ACL; akses session mengikuti izin folder user. CLI tidak mengatur ACL khusus.
 
 Saat membaca, struktur dan expiry session divalidasi. Session yang hilang dianggap
 belum login; session rusak atau tidak dapat dibaca menghasilkan error yang berbeda.

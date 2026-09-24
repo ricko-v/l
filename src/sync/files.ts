@@ -15,13 +15,24 @@ export function sha256(data: Buffer) {
 export function validateEntryPath(name: string) {
   if (!name || name.includes("\\") || name.startsWith("/") || name.split("/").some((part) =>
     !part || part === "." || part === ".." || /[\x00-\x1f\x7f<>:"|?*]/.test(part)
-    || /[. ]$/.test(part) || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(part))) {
+    || /[. ]$/.test(part) || /^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(part))) {
     throw new Error(`Unsafe package path: ${JSON.stringify(name)}`);
   }
 }
 
 export function normalizedMode(mode: number) {
   return mode & 0o111 ? 0o755 : 0o644;
+}
+
+// Windows stat/chmod cannot represent POSIX executable bits. Keep the deployment
+// mode from the baseline, including when file contents have been edited locally.
+export function preserveDeploymentModes(files: Files, baseline: Manifest = {}, platform = process.platform) {
+  if (platform === "win32") {
+    for (const [name, file] of files) {
+      file.mode = Object.hasOwn(baseline, name) && baseline[name]?.endsWith(":493") ? 0o755 : 0o644;
+    }
+  }
+  return files;
 }
 
 export async function directoryAt(root: string, relative: string, create = false) {
@@ -54,7 +65,7 @@ export async function readTextFile(file: string): Promise<string | null> {
   }
 }
 
-export async function readFiles(directory: string, ignored: (name: string) => boolean = () => false): Promise<Files> {
+export async function readFiles(directory: string, ignored: (name: string) => boolean = () => false, baseline: Manifest = {}): Promise<Files> {
   const files: Files = new Map();
   let bytes = 0;
   let entries = 0;
@@ -68,7 +79,7 @@ export async function readFiles(directory: string, ignored: (name: string) => bo
       if (child.isSymbolicLink()) throw new Error(`Symbolic links are not supported: ${name}`);
       if (child.isDirectory()) { await walk(name); continue; }
       if (!child.isFile()) throw new Error(`Unsupported file type: ${name}`);
-      const file = await fs.open(path.join(directory, name), constants.O_RDONLY | constants.O_NOFOLLOW);
+      const file = await fs.open(path.join(directory, name), constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
       try {
         const stat = await file.stat();
         if (!stat.isFile() || stat.size > MAX_UNPACKED_BYTES - bytes) throw new Error("Package exceeds 250 MiB uncompressed.");
@@ -84,7 +95,7 @@ export async function readFiles(directory: string, ignored: (name: string) => bo
     }
   }
   await walk("");
-  return files;
+  return preserveDeploymentModes(files, baseline);
 }
 
 export function manifest(files: Files): Manifest {

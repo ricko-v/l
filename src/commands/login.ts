@@ -39,7 +39,9 @@ export async function loginCommand(options: { profile?: string; region?: string 
     console.log("Opening AWS Sign-In...");
     console.log(authorizationUrl.toString());
     const [, result] = await Promise.all([
-      (dependencies.openBrowser ?? open)(authorizationUrl.toString()), callback.waitForCallback(),
+      Promise.resolve().then(() => (dependencies.openBrowser ?? open)(authorizationUrl.toString())).catch(() => {
+        console.warn("Could not open a browser automatically. Open the URL above in a browser on this computer; waiting for AWS Sign-In...");
+      }), callback.waitForCallback(),
     ]);
     if (result.state !== state) throw new Error("OAuth state mismatch.");
     console.log("Exchanging authorization code...");
