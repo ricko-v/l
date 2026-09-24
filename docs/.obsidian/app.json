@@ -1,0 +1,9 @@
+{
+  "showInlineTitle": true,
+  "alwaysUpdateLinks": true,
+  "attachmentFolderPath": "_attachments",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "notes",
+  "showUnsupportedFiles": true,
+  "useMarkdownLinks": false
+}

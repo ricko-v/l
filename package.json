@@ -1,0 +1,61 @@
+{
+  "name": "@ricko-v/l",
+  "version": "2.0.0",
+  "description": "AWS Lambda maintenance CLI",
+  "main": "./dist/index.js",
+  "bin": {
+    "l": "./dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "npm run typecheck && tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "files": [
+    "dist/",
+    "docs/*.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [],
+  "author": "ricko-v",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ricko-v/l.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ricko-v/l/issues"
+  },
+  "homepage": "https://github.com/ricko-v/l#readme",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.1131.0",
+    "@aws-sdk/client-signin": "^3.1131.0",
+    "@aws-sdk/client-sts": "^3.1131.0",
+    "chalk": "^6.0.0",
+    "commander": "^15.0.0",
+    "ignore": "^7.0.9",
+    "open": "^11.0.3",
+    "yauzl": "^3.4.0",
+    "yazl": "^3.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "@types/yauzl": "^3.4.0",
+    "@types/yazl": "^3.3.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2"
+  }
+}

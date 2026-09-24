@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+/.l/
+**/.l/
+/.obsidian/
+/docs/.obsidian/workspace*.json
+/goffi-lunch/
+/test/
+*.tgz
